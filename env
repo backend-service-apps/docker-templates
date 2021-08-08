@@ -1,0 +1,3 @@
+STORAGE_RAW=/tmp/storage_raw
+STORAGE_SIZE=500M
+STORAGE=/tmp/storage_encrypted

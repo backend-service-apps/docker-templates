@@ -1,0 +1,56 @@
+version: "3.3"
+
+services:
+  backend-service-nats:
+    build: ./01-NATS
+    volumes:
+      - "${STORAGE}/nats:/data"
+
+  backend-service-clickhouse:
+    build: ./03-Clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - "${STORAGE}/clickhouse:/var/lib/clickhouse"
+
+  backend-service-postgres:
+    build: ./02-Postgres
+    environment:
+      - POSTGRES_PASSWORD=mysecretpassword
+      - POSTGRES_USER=myuser
+    volumes:
+      - "${STORAGE}/pgdata:/var/lib/postgresql/data"
+
+  backend-service-superset:
+    build: ./04-Superset
+    ports:
+      - "8088:8088"
+    volumes:
+      - "${STORAGE}/data:/app/superset_home"
+
+  backend-service-redis:
+    build: ./08-Redis
+    container_name: superset_cache
+    restart: unless-stopped
+    volumes:
+      - "${STORAGE}/redis:/data"
+
+  backend-service-caddy:
+    build: ./09-Caddy
+    #ports:
+    #  - 8443:443
+    #entrypoint: ["caddy", "reverse-proxy", "--to", "backend-service-superset:8088"]
+
+  backend-service-jupyter:
+    build: ./07-Jupyter
+    ports:
+      - 8888:8888
+    volumes:
+      - "${STORAGE}/jupyter:/home/jovyan/work"
+
+  backend-service-vault:
+    build: ./10-Vault
+    volumes:
+      - "${STORAGE}/vault:/home/jovyan/work"
